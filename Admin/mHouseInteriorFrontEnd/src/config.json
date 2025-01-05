@@ -1,0 +1,25 @@
+{
+    "info":{
+        "name":"mHouseInterior",
+        "welcomeMessage1": "We're delighted to have you here. At MHouseInterior, we believe that your home should reflect your personality and style. Whether you're looking to revamp your living space, create a cozy bedroom retreat, or design a functional yet stylish kitchen, we're here to help make your interior design dreams come true.",
+        "welcomeMessage2": "Browse through our collections, get inspired by our design ideas, and let our team of experts guide you in transforming your house into a home. Feel free to reach out with any questions or to schedule a consultation.",
+        "intro":"Welcome to the MHouseInterior family! Let's create something beautiful together.",
+        "instagram":"@mhouseinterior",
+        "phone":"+91987654321",
+        "email1":"mhouseinterior@gmail.com",
+        "email2":"mhouseinterior2@gmail.com"
+    },
+    "profile":{
+        "company":"mHouseInterior",
+        "name": "Mukesh Lohar",
+        "description1":"As a founder, I am thrilled to share my passion for interior design with you. With over 5 years of experience in the industry and more than 30 successfully completed projects, I have dedicated my career to transforming spaces into beautiful, functional environments that truly inspire and elevate the lives of my clients.",
+        "description2":"At mHouseInterior, I believe that every space has its own story, and it's my mission to bring that story to life through thoughtful and personalized design solutions. I take the time to understand each client's unique needs and tastes, blending aesthetics with functionality to create interiors that not only look stunning but also serve a practical purpose."
+    },
+    "emailPayloadInfo":{
+        "email":"Vishallohar2605@gmail.com",
+        "subject":"New Project Inquiry",
+        "text":"Project inquiry details"
+    }
+    
+
+}
