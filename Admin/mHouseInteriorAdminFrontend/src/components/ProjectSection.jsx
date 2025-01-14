@@ -8,9 +8,12 @@ const ProjectSection = () => {
   useEffect(() => {
     async function loadProjects() {
       try {
-        const projects = await fetchAllProjects();
-        setAllProjects(projects);
+        const {response,error} = await fetchAllProjects();
+        setAllProjects(response);
         console.log(allProjects);
+        if(error){
+          console.error('Error loading projects:', error);
+        }
       } catch (error) {
         console.error('Error loading projects:', error);
       }

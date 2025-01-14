@@ -11,6 +11,7 @@ import { useNavigate } from "react-router-dom";
 
         function handleLogout(){
             localStorage.removeItem('token');
+            setOpen(false);
             navigate('/login')
         }
         return (

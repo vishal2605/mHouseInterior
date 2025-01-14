@@ -4,6 +4,7 @@ import Navbar from "../components/Navbar";
 import ProjectSection from "../components/ProjectSection";
 import { useEffect, useState } from "react";
 import { LogoutDialog } from "../components/LogoutDialog";
+import { ChangePasswordDialog } from "../components/ChangePasswordDialog";
 
 const AdminDashboard=()=>{
     const navigate=useNavigate();
@@ -41,6 +42,7 @@ const AdminDashboard=()=>{
             </div>
             <CreateProjectDialog isOpen={isDialogOpen} toggleDialog={toggleDialog} isEdit={false}/>
             <LogoutDialog></LogoutDialog>
+            <ChangePasswordDialog></ChangePasswordDialog>
             <ProjectSection/>
         </div>
     )

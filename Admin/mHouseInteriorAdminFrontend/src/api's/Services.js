@@ -1,68 +1,72 @@
 import axios from 'axios';
 
 const URL = 'http://localhost:3000/admin';
+const token = localStorage.getItem('token');
 
+async function apiWrapper(apiCall) {
+    try {
+        const response = await apiCall();
+        return { response: response.data, error: null };
+    } catch (error) {
+        let errorMessage = 'An unexpected error occurred.';
+        if (error.response) {
+            errorMessage = error.response.data.message || 'Request failed.';
+        } else if (error.request) {
+            errorMessage = 'No response from server. Please try again later.';
+        }
+        return { response: null, error: errorMessage };
+    }
+}
 export async function fetchAllProjects() {
-  try {
-    const response = await axios.get(`${URL}/getAllProjects`);
-    return response.data; // You might want to return the data directly
-  } catch (error) {
-    console.error('Error fetching projects:', error);
-    throw error; // It's good practice to throw the error so the caller can handle it
-  }
+  return apiWrapper(() => 
+      axios.get(`${URL}/getAllProjects`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+      })
+  );
 }
 
 export async function fetchProjectById(id) {
-  try {
-    console.log(id);
-    const response = await axios.get(`${URL}/getProjectById`, {
-      params: { projectId: id }
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching project:', error);
-    throw new Error('An error occurred while fetching the project');
-  }
+  return apiWrapper(() =>
+      axios.get(`${URL}/getProjectById`, {
+          params: { projectId: id },
+          headers: { 'Authorization': `Bearer ${token}` }
+      })
+  );
 }
+
 export async function createProject(data) {
-    try {
-      const response = await axios.post(`${URL}/addProject`, data,
-        {
+  return apiWrapper(() =>
+      axios.post(`${URL}/addProject`, data, {
           headers: {
-            'Content-Type': 'multipart/form-data'
+              'Content-Type': 'multipart/form-data',
+              'Authorization': `Bearer ${token}`
           }
-        }
-      );
-      return response.data; // Return the data from the response
-    } catch (error) {
-      console.error('Error creating project:', error);
-      throw error; // Re-throw the error for the calling function to handle
-    }
-  }
+      })
+  );
+}
 
 export async function updateProject(id, data) {
-  try {
-      console.log(data);
+  return apiWrapper(() =>
+      axios.put(`${URL}/updateProject`, data, {
+          params: { projectId: id },
+          headers: {
+              'Content-Type': 'multipart/form-data',
+              'Authorization': `Bearer ${token}`
+          }
+      })
+  );
+}
 
-    const response = await axios.put(
-      `${URL}/updateProject`, 
-      data, 
-      {
-        params: { projectId: id },
-        headers: {
-          'Content-Type': 'multipart/form-data', // Explicitly setting the Content-Type
-        }
-        
-      }
-    );
-
-    return response.data;
-  } catch (error) {
-    console.error('Error updating project:', error);
-    throw error;
-  }
+export async function changePassword(data) {
+  return apiWrapper(() =>
+      axios.post(`${URL}/changepassword`, data, {
+          headers: { 'Authorization': `Bearer ${token}` }
+      })
+  );
 }
 
 export async function login(credential) {
-  return await axios.post(`${URL}/login`,credential).then(res=>res.data);
+  return apiWrapper(() =>
+      axios.post(`${URL}/login`, credential)
+  );
 }
