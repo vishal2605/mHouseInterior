@@ -3,17 +3,22 @@ import Logo from '../assets/logo.png';
 import { useNavigate } from 'react-router-dom';
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
 import { useRecoilState } from 'recoil';
-import { LogoutDialogAtom } from '../../store/atom';
+import { ChangePasswordDialogAtom, LogoutDialogAtom } from '../../store/atom';
 
 const Navbar = () => {
     const navigate = useNavigate();
     const [isLogout,setIsLogout] = useRecoilState(LogoutDialogAtom);
+    const [isChangePassword,setIsChangePassword] = useRecoilState(ChangePasswordDialogAtom);
 
     const goToHome = () => {
         navigate('/adminDashboard');
     };
     const openDialog = () => {
         setIsLogout(true);
+    }
+    const openChangePasswordDialog = ()=>{
+        setIsChangePassword(true);
+        console.log('isChangePassword ',isChangePassword);
     }
     return (
         <div className='flex justify-between items-center px-5 bg-white shadow-md'>
@@ -40,6 +45,7 @@ const Navbar = () => {
                             <a
                                 href="#"
                                 className={`block px-4 py-2 text-sm ${active ? 'bg-gray-100' : 'text-gray-700'}`}
+                                onClick={openChangePasswordDialog}
                             >
                                 Change Password
                             </a>

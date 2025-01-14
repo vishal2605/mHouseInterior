@@ -9,6 +9,7 @@ const {Admin,Project} = require('../db');
 const { v4: uuidv4 } = require('uuid');
 const fs = require('fs');
 const nodemailer= require('nodemailer');
+const { authenticateJwt } = require('../middleware/auth');
 
 let transporter= nodemailer.createTransport({
   service:'gmail',
@@ -53,27 +54,91 @@ router.post('/send-email',async (req,res) =>{
   }
 })
 
-router.post('/signup',async (req,res)=>{
-    const {username,password} = req.body;
-    const admin = await Admin.findOne({username,password});
-    if(admin){
-        res.status(403).json({msg:"Admin is already exists"});
-    } else{
-        const obj={username:username,password:password}
-        const newAdmin= new Admin(obj);
-        newAdmin.save();
-        const token = jwt.sign({username,role:'admin'},process.env.SECRET,{expiresIn:'3h'});
-        res.json({msg:'Admin created successfully ',token});
-    }
-})
+router.post('/signup', async (req, res) => {
+  try {
+      const { username, password } = req.body;
 
-router.post('/login', async (req,res) =>{
-    const {username,password} =req.body;
-    const admin=await Admin.findOne({username,password});
-    if(admin){
-        const token = jwt.sign({username,role:'admin'},process.env.SECRET,{expiresIn:'3h'});
-        res.json({message:'Logged in successfully',token});
+      // Check if admin already exists
+      const existingAdmin = await Admin.findOne({ username });
+      if (existingAdmin) {
+          return res.status(403).json({ msg: "Admin already exists" });
+      }
+
+      // Hash the password
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(password, salt);
+
+      // Create new admin
+      const newAdmin = new Admin({ username, password: hashedPassword });
+      await newAdmin.save();
+
+      // Generate token
+      const token = jwt.sign({ username, role: 'admin' }, process.env.SECRET, { expiresIn: '3h' });
+      res.json({ msg: 'Admin created successfully', token });
+  } catch (error) {
+      res.status(500).json({ msg: 'Error creating admin', error });
+  }
+});
+
+// Login route
+router.post('/login', async (req, res) => {
+  try {
+      const { username, password } = req.body;
+
+      // Find admin by username
+      const admin = await Admin.findOne({ username });
+      if (!admin) {
+          return res.status(401).json({ msg: 'Invalid username or password' });
+      }
+
+      // Compare the hashed password
+      const isMatch = await bcrypt.compare(password, admin.password);
+      if (!isMatch) {
+          return res.status(401).json({ msg: 'Invalid username or password' });
+      }
+
+      // Generate token
+      const token = jwt.sign({ username, role: 'admin' }, process.env.SECRET, { expiresIn: '3h' });
+      res.json({ message: 'Logged in successfully', token });
+  } catch (error) {
+      res.status(500).json({ msg: 'Error logging in', error });
+  }
+});
+
+
+router.post('/changepassword',authenticateJwt, async (req, res) => {
+  try {
+    const { username, oldPassword, newPassword } = req.body;
+
+    // Validate inputs
+    if (!username || !oldPassword || !newPassword) {
+      return res.status(400).json({ message: 'All fields are required' });
     }
+
+    // Find the admin by username
+    const admin = await Admin.findOne({ username });
+    if (!admin) {
+      return res.status(404).json({ message: 'Admin not found' });
+    }
+
+    // Compare the old password
+    const isMatch = await bcrypt.compare(oldPassword, admin.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: 'Incorrect old password' });
+    }
+
+    // Hash the new password
+    const salt = await bcrypt.genSalt(10);
+    admin.password = await bcrypt.hash(newPassword, salt);
+
+    // Save the updated admin
+    await admin.save();
+
+    res.status(200).json({ message: 'Password changed successfully' });
+  } catch (error) {
+    console.error('Error changing password:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
 });
 // Ensure the uploads directory exists
 const uploadsDir = path.resolve(__dirname, 'uploads');
@@ -117,7 +182,7 @@ const uploadMiddleware = (req, res) => {
 };
 
 // Add Project endpoint
-router.post('/addProject', async (req, res) => {
+router.post('/addProject',authenticateJwt, async (req, res) => {
   try {
     await uploadMiddleware(req, res);
 
@@ -149,7 +214,7 @@ router.post('/addProject', async (req, res) => {
 });  
   
 
-router.get('/getProjectById', async (req, res) => {
+router.get('/getProjectById',authenticateJwt, async (req, res) => {
     try {
       const { projectId } = req.query;
   
@@ -171,7 +236,7 @@ router.get('/getProjectById', async (req, res) => {
     }
   });
 
-  router.get('/getAllProjects', async (req, res) => {
+  router.get('/getAllProjects',authenticateJwt, async (req, res) => {
     try {
         const allProjects = await Project.find();
 
@@ -186,7 +251,7 @@ router.get('/getProjectById', async (req, res) => {
     }
   });
 
-  router.put('/updateProject', async (req, res) => {
+  router.put('/updateProject',authenticateJwt, async (req, res) => {
     try {
       const { projectId } = req.query;
       const { name, address } = req.body;
@@ -226,7 +291,7 @@ router.get('/getProjectById', async (req, res) => {
   });
   
   // DELETE route to delete a project by projectId
-  router.delete('/deleteProject', async (req, res) => {
+  router.delete('/deleteProject',authenticateJwt, async (req, res) => {
     try {
       const { projectId } = req.query;
   

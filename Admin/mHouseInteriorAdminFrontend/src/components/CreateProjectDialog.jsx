@@ -13,13 +13,16 @@ const CreateProjectDialog = ({ isOpen, toggleDialog, isEdit, projectId }) => {
     if (isEdit) {
       const loadProjectData = async () => {
         try {
-          const response = await fetchProjectById(projectId);
+          const {response,error} = await fetchProjectById(projectId);
           setProfileImage(`${backendUrl}/${response.profileImage}`);
           setName(response.name);
           setAddress(response.address);
           setImages(response.images.map(img => `${backendUrl}/${img}`));
+          if(error){
+            toast.error('Error fetching project:', error);
+          }
         } catch (error) {
-          console.error('Error fetching project:', error);
+          toast.error('Error fetching project:', error);
         }
       };
 
@@ -130,7 +133,7 @@ const CreateProjectDialog = ({ isOpen, toggleDialog, isEdit, projectId }) => {
         }
       }
 
-      const response = isEdit 
+      const {response,error} = isEdit 
         ? await updateProject(projectId, data) 
         : await createProject(data);
   

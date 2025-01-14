@@ -3,13 +3,15 @@ import LoginImg from '../assets/LoginImg.jpg';
 import { login } from '../api\'s/Services';
 import { useNavigate } from 'react-router-dom';
 import zod from 'zod';
+import { useSetRecoilState } from 'recoil';
+import { UsernameAtom } from '../../store/atom';
 const Login = () => {
 
     const userSchema = zod.object({
         username: zod.string().min(1),
         password: zod.string().min(8)
     })
-
+    const saveUsername = useSetRecoilState(UsernameAtom);
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
@@ -20,6 +22,7 @@ const Login = () => {
             try {
                 const token = localStorage.getItem('token');
                 if (token) {
+                    saveUsername(username);
                     navigate('/adminDashboard');
                 }
             } catch (error) {
@@ -32,12 +35,13 @@ const Login = () => {
     async function handleLogin() {
         userSchema.parse({username: username,password: password});
         try {
-            const response = await login({ username, password });
+            const {response,error} = await login({ username, password });
             if (response.token) {
                 localStorage.setItem('token', response.token);
+                saveUsername(username);
                 navigate('/adminDashboard');
             } else {
-                setErrorMessage('Error while logging in');
+                setErrorMessage('Error while logging in',error);
             }
         } catch (error) {
             console.error('Error while login:', error);

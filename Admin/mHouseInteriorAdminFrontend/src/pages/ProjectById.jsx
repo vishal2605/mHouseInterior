@@ -5,6 +5,8 @@ import Navbar from '../components/Navbar';
 import Fade from 'react-reveal/Fade';
 import Lightbox from 'react-awesome-lightbox';
 import 'react-awesome-lightbox/build/style.css'; // Import lightbox styles
+import { LogoutDialog } from '../components/LogoutDialog';
+import { ChangePasswordDialog } from '../components/ChangePasswordDialog';
 
 const ProjectById = () => {
   const { state } = useLocation();
@@ -17,8 +19,11 @@ const ProjectById = () => {
   useEffect(() => {
     const fetchProject = async () => {
       try {
-        const response = await fetchProjectById(projectId);
+        const {response,error} = await fetchProjectById(projectId);
         setProject(response);
+        if(error){
+        console.error('Error fetching project details:', error);
+        }
       } catch (error) {
         console.error('Error fetching project details:', error);
       }
@@ -38,6 +43,8 @@ const ProjectById = () => {
   return (
     <div>
       <Navbar />
+      <LogoutDialog></LogoutDialog>
+      <ChangePasswordDialog></ChangePasswordDialog>
       <Fade>
         <div className="relative w-full sm:h-screen px-4 sm:px-0">
           <img
