@@ -37,7 +37,7 @@ export function ChangePasswordDialog() {
         }
     
         if (newPassword !== confirmPassword) {
-            setError('New password and confirm password do not match.');
+            setError('New password and confirm password did not match.');
             return;
         }
     
