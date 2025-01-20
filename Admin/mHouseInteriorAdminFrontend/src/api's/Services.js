@@ -45,6 +45,17 @@ export async function createProject(data) {
   );
 }
 
+export async function deleteProject(id){
+    return apiWrapper(() => {
+        axios.delete(`${URL}/deleteProject`,{
+        params:{projectId: id},
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+        })
+    })
+}
+
 export async function updateProject(id, data) {
   return apiWrapper(() =>
       axios.put(`${URL}/updateProject`, data, {

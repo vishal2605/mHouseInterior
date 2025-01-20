@@ -114,7 +114,7 @@ router.post('/login', async (req, res) => {
           return res.status(401).json({ msg: 'Invalid username or password' });
       }
       // Generate token
-      const token = jwt.sign({ username, role: 'admin' }, process.env.SECRET, { expiresIn: '3h' });
+      const token = jwt.sign({ id:admin.id,username:username, role: 'admin' }, process.env.SECRET, { expiresIn: '3h' });
       res.json({ message: 'Logged in successfully', token });
   } catch (error) {
       res.status(500).json({ msg: 'Error logging in', error });

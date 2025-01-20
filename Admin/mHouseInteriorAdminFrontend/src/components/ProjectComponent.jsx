@@ -7,6 +7,7 @@ import { PencilIcon, TrashIcon } from '@heroicons/react/24/solid';
 const ProjectComponent = ({ title, url, projectId }) => {
   const [isEdit, setIsEdit] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isDeleteDialog,setIsDeleteDialog] = useState(false);
   const backendUrl = 'http://localhost:3000';
   const navigate = useNavigate();
 
@@ -14,6 +15,10 @@ const ProjectComponent = ({ title, url, projectId }) => {
     setIsDialogOpen(!isDialogOpen);
     setIsEdit(false);
   };
+
+  const toggleDeleteDialog = () =>{
+    setIsDeleteDialog(!isDeleteDialog);
+  }
 
   const handleEdit = () => {
     setIsDialogOpen(true);
@@ -52,7 +57,7 @@ const ProjectComponent = ({ title, url, projectId }) => {
         <button
           onClick={(e) => {
             e.stopPropagation();
-            setIsDialogOpen(true); // Replace with actual delete logic
+            setIsDeleteDialog(true); // Replace with actual delete logic
           }}
           className="flex w-1/2 items-center justify-center px-4 py-2 bg-red-500 text-white rounded-md"
         >
@@ -68,6 +73,7 @@ const ProjectComponent = ({ title, url, projectId }) => {
           projectId={projectId}
         />
       )}
+      <DeleteDialog isDeleteDialog={isDeleteDialog} toggleDeleteDialog={toggleDeleteDialog} projectId={projectId}></DeleteDialog>
     </div>
   );
 };

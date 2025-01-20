@@ -27,11 +27,11 @@ const ProjectSection = () => {
       <div className="grid md:grid-cols-3 grid-cols-2 gap-4 p-4">
         {allProjects.map((project) => (
           <ProjectComponent
-            key={project.projectId}
+            key={project.id}
             title={project.name}
             url={project.profileImage} // Ensure the property matches
             images={project.images}    // Ensure the property matches
-            projectId={project.projectId}
+            projectId={project.id}
           />
         ))}
       </div>
