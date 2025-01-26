@@ -15,6 +15,7 @@ import Projects from './pages/Projects'
 import Services from './pages/Services';
 import About from './pages/About';
 import Contact from './pages/Contact'
+import ProjectAtId from './pages/ProjectAtId'
 function App() {
    return (
     <div className='bg-slate-50'>

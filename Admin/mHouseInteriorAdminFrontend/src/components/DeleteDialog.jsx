@@ -1,13 +1,23 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from '@headlessui/react'
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
+import { deleteProject, fetchAllProjects } from '../api\'s/Services'
+import { Toaster, toast } from 'react-hot-toast';
 
-export default function DeleteDialog(isDeleteDialog) {
-    function setOpen(){
-        isDeleteDialog=false;
+export default function DeleteDialog(props) {
+  async function deleteProject1(){
+    props.toggleDeleteDialog()
+    const {response,error} = await deleteProject(props.projectId);
+    window.location.reload();
+    if(response){
+      toast.success("Project deleted successfully");
     }
+    if(error){
+      toast.error("Error while deleting project");
+    }
+  }
   return (
-    <Dialog open={isDeleteDialog} onClose={setOpen} className="relative z-10">
+    <Dialog open={props.isDeleteDialog} onClose={props.toggleDeleteDialog} className="relative z-10">
       <DialogBackdrop
         transition
         className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity data-[closed]:opacity-0 data-[enter]:duration-300 data-[leave]:duration-200 data-[enter]:ease-out data-[leave]:ease-in"
@@ -26,11 +36,11 @@ export default function DeleteDialog(isDeleteDialog) {
                 </div>
                 <div className="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
                   <DialogTitle as="h3" className="text-base font-semibold leading-6 text-gray-900">
-                    Deactivate account
+                    Delete Project
                   </DialogTitle>
                   <div className="mt-2">
                     <p className="text-sm text-gray-500">
-                      Are you sure you want to deactivate your account? All of your data will be permanently removed.
+                      Are you sure you want to delete this project? All of your data will be permanently removed.
                       This action cannot be undone.
                     </p>
                   </div>
@@ -40,15 +50,15 @@ export default function DeleteDialog(isDeleteDialog) {
             <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
               <button
                 type="button"
-                onClick={() => setOpen(false)}
+                onClick={() =>deleteProject1()}
                 className="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 sm:ml-3 sm:w-auto"
               >
-                Deactivate
+                Delete
               </button>
               <button
                 type="button"
                 data-autofocus
-                onClick={() => setOpen(false)}
+                onClick={() => props.toggleDeleteDialog()}
                 className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
               >
                 Cancel

@@ -30,7 +30,7 @@ const Projects = () => {
         </div>
         <div className="grid md:grid-cols-3 grid-cols-2 gap-4 p-4">
         {allProjects.map((project) => (
-            <ProjectComponent key={project.name} title={project.projectId} url={project.profileImage} />
+            <ProjectComponent key={project.id} projectId={project.id} title={project.name} url={project.profileImage} />
         ))} 
         </div>
     </div>

@@ -18,6 +18,7 @@ export async function fetchAllProjects() {
       const response = await axios.get(`${URL}/getProjectById`, {
         params: { projectId: id }
       });
+      console.log('project ', response.data);
       return response.data;
     } catch (error) {
       console.error('Error fetching project:', error);

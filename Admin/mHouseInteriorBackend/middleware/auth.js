@@ -8,7 +8,8 @@ const authenticateJwt = (req, res, next) => {
             if (err) {
                 return res.sendStatus(403); // Corrected from sendStatus to res.sendStatus
             }
-            req.user = user; // Attach the user object to the request
+            req.user = user;
+             // Attach the user object to the request
             next();
         });
     } else {

@@ -9,8 +9,9 @@ const ProjectSection = () => {
     async function loadProjects() {
       try {
         const {response,error} = await fetchAllProjects();
-        setAllProjects(response);
-        console.log(allProjects);
+        const sortedProjects = response.sort((a, b) => a.id - b.id);
+
+        setAllProjects(sortedProjects);
         if(error){
           console.error('Error loading projects:', error);
         }
@@ -27,11 +28,11 @@ const ProjectSection = () => {
       <div className="grid md:grid-cols-3 grid-cols-2 gap-4 p-4">
         {allProjects.map((project) => (
           <ProjectComponent
-            key={project.projectId}
+            key={project.id}
             title={project.name}
             url={project.profileImage} // Ensure the property matches
             images={project.images}    // Ensure the property matches
-            projectId={project.projectId}
+            projectId={project.id}
           />
         ))}
       </div>
