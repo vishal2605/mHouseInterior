@@ -7,6 +7,8 @@ const CreateProjectDialog = ({ isOpen, toggleDialog, isEdit, projectId }) => {
   const [name, setName] = useState('');
   const [address, setAddress] = useState('');
   const [images, setImages] = useState([]);
+  const [profileFile, setProfileFile] = useState(null);
+  const [imageFilePaths, setImageFilePaths ] = useState([]);
   const backendUrl = 'http://localhost:3000';
 
   useEffect(() => {
@@ -18,6 +20,7 @@ const CreateProjectDialog = ({ isOpen, toggleDialog, isEdit, projectId }) => {
           setName(response.name);
           setAddress(response.address);
           setImages(response.images.map(img => `${backendUrl}/${img}`));
+          setImageFilePaths(response.images.map(img => `${img}`));
           if(error){
             toast.error('Error fetching project:', error);
           }
@@ -40,6 +43,8 @@ const CreateProjectDialog = ({ isOpen, toggleDialog, isEdit, projectId }) => {
     const file = e.target.files[0];
     if (file) {
       setProfileImage(URL.createObjectURL(file));
+      setProfileFile(file);
+      console.log('file',file);
     }
   };
 
@@ -51,13 +56,10 @@ const CreateProjectDialog = ({ isOpen, toggleDialog, isEdit, projectId }) => {
   
     // Update state with the new file URLs
     setImages(prevImages => [...prevImages, ...fileUrls]);
+    setImageFilePaths(prevImageFiles => [...prevImageFiles, ...files]);
   
     console.log(fileUrls);
   };
-  
-  
-  
-
   const closeDialog = () => {
     setProfileImage(null);
     setName('');
@@ -66,13 +68,27 @@ const CreateProjectDialog = ({ isOpen, toggleDialog, isEdit, projectId }) => {
 
     const fileInput = document.querySelector('input[type="file"]');
     if (fileInput) fileInput.value = '';
-
+    // window.location.reload();
     toggleDialog();
   };
 
   const handleRemoveImage = (index) => {
-    setImages(prevImages => prevImages.filter((_, i) => i !== index));
+    // Use functional updates to ensure the previous state is correctly referenced
+    setImages((prevImages) => {
+      const updatedImages = prevImages.filter((_, i) => i !== index);
+      console.log('Updated images:', updatedImages); // Log the correct updated state
+      return updatedImages;
+    });
+  
+    setImageFilePaths((prevImageFilePaths) => {
+      const updatedImageFilePaths = prevImageFilePaths.filter((_, i) => i !== index);
+      console.log('Updated imageFilePaths:', updatedImageFilePaths); // Log the correct updated state
+      return updatedImageFilePaths;
+    });
   };
+  
+  
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!name || !address) {
@@ -91,13 +107,14 @@ const CreateProjectDialog = ({ isOpen, toggleDialog, isEdit, projectId }) => {
     const existingImageUrls = []; // For existing image URLs
   
     // Handle profileImage if it exists
-    if (profileImage) {
-      formData.append('profileImage', profileImage);
+    if (profileFile) {
+      formData.append('profileImage', profileFile);
     }
   
     // Loop through images to categorize them as either new files or existing URLs
-    images.forEach((image) => {
+    imageFilePaths.forEach((image) => {
       if (image instanceof File) {
+        console.log(image);
         imageFiles.push(image); // Add new image file to the array
       } else {
         existingImageUrls.push(image); // Add existing image URL to the array

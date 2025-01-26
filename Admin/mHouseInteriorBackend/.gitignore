@@ -7,6 +7,8 @@ node_modules/
 # Prisma generated files
 prisma/node_modules/
 
+uploads/
+
 # Optional: Prisma migrations
 prisma/migrations/
 

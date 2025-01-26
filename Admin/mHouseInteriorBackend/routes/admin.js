@@ -191,7 +191,7 @@ const upload = multer({
   },
 }).fields([
   { name: 'profileImage', maxCount: 1 },
-  { name: 'images', maxCount: 5 },
+  { name: 'images[]', maxCount: 5 },
 ]);
 
 const uploadMiddleware = (req, res) => {
@@ -220,7 +220,7 @@ router.post('/addProject', authenticateJwt, async (req, res) => {
 
     // Access uploaded files
     const profileImage = req.files['profileImage'] && req.files['profileImage'][0] ? req.files['profileImage'][0].path : '';
-    const images = req.files['images'] ? req.files['images'].map(file => file.path) : [];
+    const images = req.files['images[]'] ? req.files['images[]'].map(file => file.path) : [];
 
     const projectData = {
       name,
@@ -299,66 +299,104 @@ router.get('/getProjectById', async (req, res) => {
         res.status(500).json({ message: 'An error occurred while fetching the projects', error });
     }
 });
+
 router.put('/updateProject', authenticateJwt, async (req, res) => {
   try {
-      const { projectId } = req.query;
-      const { name, address } = req.body;
+    const { projectId } = req.query;
+    const { name, address } = req.body; // Add `retainedImages` to manage existing images
+    await uploadMiddleware(req, res);
 
-      if (!projectId) {
-          return res.status(400).json({ message: 'Project ID is required' });
+    if (!projectId) {
+      return res.status(400).json({ message: 'Project ID is required' });
+    }
+
+    const projectIdInt = parseInt(projectId, 10);
+
+    const existingImages = Array.isArray(req.body['existingImages'])
+      ? req.body['existingImages']
+      : req.body['existingImages']
+      ? [req.body['existingImages']]
+      : [];
+
+    // Find the existing project
+    const existingProject = await prisma.project.findUnique({
+      where: { id: projectIdInt },
+    });
+
+    if (!existingProject) {
+      return res.status(404).json({ message: 'Project not found' });
+    }
+
+    // Process uploaded files
+    const newProfileImage =
+      req.files['profileImage'] && req.files['profileImage'][0]
+        ? req.files['profileImage'][0].path
+        : null;
+
+    const newImages = req.files['images[]']
+      ? req.files['images[]'].map((file) => file.path)
+      : [];
+
+    // Combine retained images (sent in the request body) with newly uploaded images
+    const updatedImages = [
+      ...existingImages, // These are the images the user decided to keep
+      ...newImages, // These are the newly uploaded images
+    ];
+
+    // Remove old profile image if a new one is uploaded
+    if (newProfileImage && existingProject.profileImage) {
+      const oldProfileImagePath = path.resolve(existingProject.profileImage);
+      if (fs.existsSync(oldProfileImagePath)) {
+        fs.unlinkSync(oldProfileImagePath);
       }
-      const projectIdInt = parseInt(projectId, 10);
+    }
 
-      const existingProject = await prisma.project.findUnique({
-          where: { id: projectIdInt }
-      });
-
-      if (!existingProject) {
-          return res.status(404).json({ message: 'Project not found' });
+    // Remove images that are no longer retained
+    const removedImages = existingProject.images.filter(
+      (image) => !existingImages.includes(image)
+    );
+    removedImages.forEach((imagePath) => {
+      const resolvedPath = path.resolve(imagePath);
+      if (fs.existsSync(resolvedPath)) {
+        fs.unlinkSync(resolvedPath);
       }
+    });
 
-      // Remove old profile image if it exists
-      if (existingProject.profileImage) {
-          const oldProfileImagePath = path.join(__dirname, 'uploads', path.basename(existingProject.profileImage));
-          if (fs.existsSync(oldProfileImagePath)) {
-              fs.unlinkSync(oldProfileImagePath);
-          }
-      }
+    // Update the project with new data
+    const updatedData = {
+      name: name || existingProject.name,
+      address: address || existingProject.address,
+      profileImage: newProfileImage || existingProject.profileImage,
+      images: updatedImages,
+    };
 
-      // Remove old images if they exist
-      existingProject.images.forEach(imagePath => {
-          const oldImagePath = path.join(__dirname, 'uploads', path.basename(imagePath));
-          if (fs.existsSync(oldImagePath)) {
-              fs.unlinkSync(oldImagePath);
-          }
-      });
+    const updatedProject = await prisma.project.update({
+      where: { id: projectIdInt },
+      data: updatedData,
+      select: {
+        id: true,
+        name: true,
+        address: true,
+        profileImage: true,
+        images: true,
+      },
+    });
 
-      // Update project details
-      const updatedData = {
-          name,
-          address,
-          profileImage: '', // Assuming the profileImage is reset; update as needed
-          images: [] // Assuming images are reset; update as needed
-      };
-
-      const updatedProject = await prisma.project.update({
-          where: { id: projectIdInt },
-          data: updatedData,
-          select: {
-              id: true,
-              name: true,
-              address: true,
-              profileImage: true,
-              images: true
-          }
-      });
-
-      res.status(200).json({ message: 'Project updated successfully', project: updatedProject });
+    res
+      .status(200)
+      .json({ message: 'Project updated successfully', project: updatedProject });
   } catch (error) {
-      console.error('Error updating project:', error);
-      res.status(500).json({ message: 'An error occurred while updating the project', error });
+    console.error('Error updating project:', error);
+    if (error instanceof multer.MulterError) {
+      res.status(400).json({ message: 'File upload error', error: error.message });
+    } else {
+      res
+        .status(500)
+        .json({ message: 'An error occurred while updating the project', error });
+    }
   }
 });
+
   
   // DELETE route to delete a project by projectId
   router.delete('/deleteProject', authenticateJwt, async (req, res) => {

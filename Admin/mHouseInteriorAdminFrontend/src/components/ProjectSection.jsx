@@ -9,8 +9,9 @@ const ProjectSection = () => {
     async function loadProjects() {
       try {
         const {response,error} = await fetchAllProjects();
-        setAllProjects(response);
-        console.log(allProjects);
+        const sortedProjects = response.sort((a, b) => a.id - b.id);
+
+        setAllProjects(sortedProjects);
         if(error){
           console.error('Error loading projects:', error);
         }

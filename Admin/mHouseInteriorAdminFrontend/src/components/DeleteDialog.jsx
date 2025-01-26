@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react'
 import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from '@headlessui/react'
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
-import { deleteProject } from '../api\'s/Services'
+import { deleteProject, fetchAllProjects } from '../api\'s/Services'
 import { Toaster, toast } from 'react-hot-toast';
 
 export default function DeleteDialog(props) {
   async function deleteProject1(){
     props.toggleDeleteDialog()
     const {response,error} = await deleteProject(props.projectId);
+    window.location.reload();
     if(response){
       toast.success("Project deleted successfully");
     }
